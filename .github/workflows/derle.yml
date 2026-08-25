@@ -1,0 +1,29 @@
+name: Eklentiyi Derle
+
+on:
+  push:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  derle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Depoyu indir
+        uses: actions/checkout@v4
+
+      - name: Java 21 kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Maven ile derle
+        run: mvn -B clean package
+
+      - name: Jar dosyasini yukle
+        uses: actions/upload-artifact@v4
+        with:
+          name: SinifSistemi
+          path: target/SinifSistemi.jar
