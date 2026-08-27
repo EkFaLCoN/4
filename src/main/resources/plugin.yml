@@ -1,0 +1,41 @@
+name: SinifSistemi
+version: '${project.version}'
+main: com.sinifsistemi.SinifSistemi
+api-version: '1.21.11'
+author: SinifSistemi
+description: Tamamen Turkce sinif secim ve yetenek sistemi
+folia-supported: false
+
+commands:
+  sinif:
+    description: Sinif secim menusunu acar veya sinifini gosterir
+    usage: /sinif [bilgi|liste]
+    aliases: [class, sinifim]
+  sinifyonetim:
+    description: Sinif yonetim komutlari
+    usage: /sinifyonetim <ver|sifirla|bilgi|menu|yenile> ...
+    aliases: [sy, sinifadmin, classadmin]
+  silah:
+    description: Ozel silah verme ve listeleme
+    usage: /silah <ver|liste> ...
+    aliases: [weapon, ozelsilah]
+
+permissions:
+  sinif.kullan:
+    description: Sinif menusunu kullanabilme
+    default: true
+  sinif.admin:
+    description: Sinif yonetim komutlarini kullanabilme
+    default: op
+  sinif.degistir:
+    description: Kendi sinifini serbestce degistirebilme
+    default: op
+  sinif.menu.muaf:
+    description: Zorunlu sinif secim menusunden muaf tutulma
+    default: false
+  sinif.silah.yonet:
+    description: /silah komutunu kullanabilme
+    default: op
+  sinif.silah.serbest:
+    description: Sinif kisitini asarak her silahi kullanabilme
+    default: op
