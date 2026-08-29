@@ -10,34 +10,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Ne var bakalim
-        run: ls -la
-
-      - name: Zip varsa ac
+      - name: Zipi ac
         run: |
           for z in *.zip; do
             [ -e "$z" ] || continue
             echo "aciliyor: $z"
             unzip -o "$z"
           done
-          echo "--- acildiktan sonra ---"
-          find . -name "build.gradle*" -not -path "./.git/*"
+          echo "--- pom.xml nerede ---"
+          find . -name pom.xml -not -path './.git/*'
 
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '25'
-
-      - uses: gradle/actions/setup-gradle@v4
+          cache: maven
 
       - name: Derle
         run: |
-          DIR=$(dirname "$(find . -name 'build.gradle.kts' -not -path './.git/*' | head -1)")
+          DIR=$(dirname "$(find . -name pom.xml -not -path './.git/*' | head -1)")
           echo "proje klasoru: $DIR"
           cd "$DIR"
-          gradle build --no-daemon --stacktrace
+          mvn -B package
 
       - uses: actions/upload-artifact@v4
         with:
           name: SinifSistemi
-          path: '**/build/libs/*.jar'
+          path: '**/target/*.jar'
