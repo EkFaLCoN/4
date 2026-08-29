@@ -1,42 +1,31 @@
-name: Eklentiyi Derle
+name: Build
 
 on:
   push:
-    branches: [ "**" ]
   workflow_dispatch:
 
 jobs:
-  derle:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Depoyu indir
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Java 25 kur
-        uses: actions/setup-java@v4
+      - name: Zipi ac
+        run: |
+          unzip -o SinifSistemi-duzeltilmis.zip
+          mv SinifSistemi/* . 2>/dev/null || true
+
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '25'
-          cache: maven
 
-      - name: Java ve Maven surumunu dogrula
-        run: |
-          echo "--- java -version ---"
-          java -version
-          echo "--- mvn -v ---"
-          mvn -v
-          SURUM=$(java -version 2>&1 | head -1 | sed -E 's/.*"([0-9]+).*/\1/')
-          echo "Algilanan JDK: $SURUM"
-          if [ "$SURUM" -lt 25 ]; then
-            echo "::error::Maven JDK $SURUM ile calisiyor, ancak Paper 26.2 icin JDK 25 gerekiyor."
-            exit 1
-          fi
+      - uses: gradle/actions/setup-gradle@v4
 
-      - name: Maven ile derle
-        run: mvn -B clean package
+      - name: Derle
+        run: gradle build --no-daemon
 
-      - name: Jar dosyasini yukle
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: SinifSistemi
-          path: target/SinifSistemi.jar
+          path: build/libs/*.jar
