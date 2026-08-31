@@ -1,39 +1,70 @@
-name: Build
+name: Eklentiyi Derle
 
 on:
   push:
+    branches: [ "**" ]
   workflow_dispatch:
 
 jobs:
-  build:
+  derle:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Depoyu indir
+        uses: actions/checkout@v4
 
-      - name: Zipi ac
+      - name: Zip dosyasini ac
         run: |
-          for z in *.zip; do
-            [ -e "$z" ] || continue
-            echo "aciliyor: $z"
-            unzip -o "$z"
-          done
-          echo "--- pom.xml nerede ---"
-          find . -name pom.xml -not -path './.git/*'
+          ZIP=$(ls *.zip 2>/dev/null | head -1)
+          if [ -z "$ZIP" ]; then
+            echo "::error::Depoda .zip dosyasi bulunamadi."
+            exit 1
+          fi
+          echo "Acilan dosya: $ZIP"
+          unzip -q "$ZIP" -d _kaynak
 
-      - uses: actions/setup-java@v5
+          ADET=$(ls _kaynak | wc -l)
+          KOK=$(ls _kaynak | head -1)
+          if [ "$ADET" -eq 1 ] && [ -d "_kaynak/$KOK" ]; then
+            KAYNAK="_kaynak/$KOK"
+          else
+            KAYNAK="_kaynak"
+          fi
+          echo "Kaynak klasoru: $KAYNAK"
+
+          rsync -a --exclude='.github' "$KAYNAK/" ./
+          rm -rf _kaynak
+
+          ls -la
+          if [ ! -f pom.xml ]; then
+            echo "::error::pom.xml bulunamadi."
+            exit 1
+          fi
+
+      - name: Java 25 kur
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '25'
           cache: maven
 
-      - name: Derle
+      - name: Surumleri dogrula
         run: |
-          DIR=$(dirname "$(find . -name pom.xml -not -path './.git/*' | head -1)")
-          echo "proje klasoru: $DIR"
-          cd "$DIR"
-          mvn -B package
+          java -version
+          mvn -v
+          SURUM=$(java -version 2>&1 | head -1 | sed -E 's/.*"([0-9]+).*/\1/')
+          echo "Algilanan JDK: $SURUM"
+          if [ "$SURUM" -lt 25 ]; then
+            echo "::error::Maven JDK $SURUM ile calisiyor, JDK 25 gerekiyor."
+            exit 1
+          fi
 
-      - uses: actions/upload-artifact@v4
+      - name: Maven ile derle
+        run: mvn -B clean package
+
+      - name: Jar dosyasini yukle
+        uses: actions/upload-artifact@v4
         with:
-          name: SinifSistemi
-          path: '**/target/*.jar'
+          name: ClassAndRegion
+          path: target/ClassAndRegion.jar
+          if-no-files-found: error
